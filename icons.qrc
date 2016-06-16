@@ -1,0 +1,8 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>resources/blank.png</file>
+    <file>resources/complete.png</file>
+    <file>resources/failure.png</file>
+    <file>resources/spinning.png</file>
+  </qresource>
+</RCC>
