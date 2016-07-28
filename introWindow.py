@@ -79,7 +79,7 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         Dialog.setWindowTitle(_translate("Dialog", "Dialog", None))
         self.label.setText(_translate("Dialog", "Filimin Auto Configuration", None))
-        self.label_2.setText(_translate("Dialog", "This app is the simplest way to connect your Filimin to your home\'s Wi-Fi. It is a simpler alternative to manually configuring your Filimin yourself.", None))
+        self.label_2.setText(_translate("Dialog", "This app, designed for Windows 7 and later, is the simplest way to connect your Filimin to your home\'s Wi-Fi. It is a simpler alternative to manually configuring your Filimin yourself.", None))
         self.label_5.setText(_translate("Dialog", "<html><head/><body><p>This app does does not support advanced settings, such as defining colors and time settings for your Filimin. After using the app, visit our <a href=\"http://filimin.com/setup\"><span style=\" text-decoration: underline; color:#0000ff;\">setup page</span></a> to change these advanced settings.</p></body></html>", None))
         self.label_6.setText(_translate("Dialog", "Unplug and re-plug in your Filimin, then immediately click the OK button below.", None))
 

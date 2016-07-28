@@ -54,7 +54,7 @@
      <item>
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>This app is the simplest way to connect your Filimin to your home's Wi-Fi. It is a simpler alternative to manually configuring your Filimin yourself.</string>
+        <string>This app, designed for Windows 7 and later, is the simplest way to connect your Filimin to your home's Wi-Fi. It is a simpler alternative to manually configuring your Filimin yourself.</string>
        </property>
        <property name="wordWrap">
         <bool>true</bool>

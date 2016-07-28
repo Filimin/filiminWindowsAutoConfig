@@ -6,7 +6,7 @@
  None,
  False,
  False,
- <PyInstaller.utils.win32.winmanifest.Manifest object at 0x037ACEB0>,
+ <PyInstaller.utils.win32.winmanifest.Manifest object at 0x03F98B50>,
  True,
  'autoConfig.pkg',
  [('out00-PYZ.pyz',
@@ -136,7 +136,7 @@
  [],
  False,
  False,
- 1466110407L,
+ 1469670313L,
  [('runw.exe',
    'c:\\python27\\lib\\site-packages\\PyInstaller\\bootloader\\Windows-32bit\\runw.exe',
    'EXECUTABLE')])

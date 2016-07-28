@@ -236,6 +236,17 @@ class Worker(QtCore.QThread):
     def connectToFilimin(self,filiminName):
         self.updateEventSlot.emit({'step':3, 'state':'spinning'})
         self.connectToNetwork(filiminName, filiminName, "Cannot connect to Filimin")
+
+    def getValue(self, key, haystack):
+        start = haystack.index(key)+len(key)
+        start = haystack.index(':',start)+1
+        if haystack[start] == ' ':
+            start += 1
+        try:
+            result = haystack[start:haystack.index(',',start)]
+        except:
+            result = haystack[start:haystack.index('}',start)]
+        return result
     
     def readAndWriteToFilimin(self, credentials, tries):
         self.updateEventSlot.emit({'step':4, 'state':'spinning'})
@@ -257,17 +268,17 @@ class Worker(QtCore.QThread):
             print "Confirmed after 1st try: "+str(tries)
             confirmed = True
         time.sleep(1)
-        '''
-        data = {"startColor" : 0,
-                "endColor" : 255,
-                "limitColors" : "false",
-                "timeOffset" : 82800,
-                "silentTimeStart":0,
-                "silentTimeEnd":0,
-                "silentTimeEnabled":"false",
-                "fadeTime":0}
-        '''
-        data = {}
+        oldData = data
+        data = {"startColor" : self.getValue("startColor",oldData),
+                "endColor" : self.getValue("endColor",oldData),
+                "limitColors" : self.getValue("limitColors",oldData),
+                "timeOffset" : self.getValue("timeOffset",oldData),
+                "silentTimeStart" : self.getValue("silentTimeStart",oldData),
+                "silentTimeEnd" : self.getValue("silentTimeEnd",oldData),
+                "silentTimeEnabled" : self.getValue("silentTimeEnabled",oldData),
+                "fadeTime" : self.getValue("fadeTime",oldData),}
+
+        # data = {}
         data['ssid'] = name
         data['pw'] = pw
         data = urllib.urlencode(data)
