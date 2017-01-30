@@ -8,7 +8,6 @@ TOTAL_STEPS = 6
 #************************************************************************
 # CLASS FOR GUI WINDOW
 #************************************************************************
-
 class MyDialog(QtGui.QDialog):
     def accept(self):
         print "accept called"
@@ -38,7 +37,17 @@ class MyDialog(QtGui.QDialog):
         print "hello close "+str(parameter)
         self.hide()
         self.parent.leaveTheParty()
-        
+
+class MyMessageBox(QtGui.QMessageBox):
+    def __init__(self, parent=None, worker=None):
+        QtGui.QWidget.__init__(self, parent)
+        self.worker = worker
+        self.parent = parent
+    
+    def closeEvent(self, parameter):
+        print "hello close "+str(parameter)
+        self.parent.leaveTheParty()
+    
 class MyWindow(QtGui.QMainWindow):
 
     step = 0
@@ -60,32 +69,43 @@ class MyWindow(QtGui.QMainWindow):
         self.thread.exception.connect(self.excepthook)
         self.thread.success.connect(self.sayGoodbye)
         self.thread.updateEventSlot.connect(self.updateEventUi)
+        self.thread.killSlot.connect(self.leaveTheParty)
         '''
         msg = QtGui.QMessageBox()
-        msg.setIcon(QtGui.QMessageBox.Information)
+        msg.setIcon(QtGui.QMessageBox.Critical)
 
         msg.setText("This is a message box")
-        msg.setInformativeText("This is additional information")
+        msg.setInformativeText("This is additional information. asd asdf sadf asd fasdf as dfas f saf asdf asdf asf sadf as df asdf asdf as df asdf asd fas df asdf asdf asdf asd fas f asdf sdf sadf wsdf sadf ad fsdf sadf")
         msg.setWindowTitle("MessageBox demo")
-        msg.setDetailedText("The details are as follows:")
-        msg.setStandardButtons(QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
-        #msg.buttonClicked.connect(msgbtn)
-        retval = msg.exec_()
+        # msg.setDetailedText("The details are as follows:")
+        msg.setStandardButtons(QtGui.QMessageBox.Retry | QtGui.QMessageBox.Close)
+        msg.buttonClicked.connect(self.testButtonClick)
+
+        # retval = msg.exec_()
+        msg.exec_()
         '''
         self.show()
         self.thread.start()
+
+    def testButtonClick(self, msg):
+        print "msg"
+        print msg.text()
         
     def closeEvent(self, parent=None):
         # print "closing GUI window"
         pass
 
     def msgBox(self, icon, title, msg):
-        box = QtGui.QMessageBox()
+        # box = QtGui.QMessageBox()
+        box = MyMessageBox(parent=self, worker=self.thread)
         box.setIcon(icon)
         box.setWindowTitle(title)
         box.setText(str(msg))
-        box.setStandardButtons(QtGui.QMessageBox.Ok)
-        box.buttonClicked.connect(self.leaveTheParty)
+        box.buttonClicked.connect(self.checkIfThePartyIsOver)        
+        if title == "Error":
+            box.setStandardButtons(QtGui.QMessageBox.Retry | QtGui.QMessageBox.Abort )
+        else:
+            box.setStandardButtons(QtGui.QMessageBox.Ok)
         retval = box.exec_()
 
     def excepthook(self, msg):
@@ -94,6 +114,13 @@ class MyWindow(QtGui.QMainWindow):
     def sayGoodbye(self, msg):
         self.msgBox(QtGui.QMessageBox.Information, "Success", msg) 
 
+    def checkIfThePartyIsOver(self, msg):
+        if msg.text() != "Abort" and msg.text() != "OK":
+            print msg.text()
+            self.thread.retrySlot.emit(self)
+        else:
+            self.leaveTheParty()
+            
     def leaveTheParty(self):
         self.deleteLater() # This ends the party
 

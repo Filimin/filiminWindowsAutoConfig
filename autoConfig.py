@@ -1,13 +1,13 @@
 """
 Filimin AutoConfig
 Autoconfigure Filimin for Windows Machines
-v1.0
+v0.1.2
 John Harrison
 """
 
 import autoConfigUi as ui
 from PyQt4 import QtCore, QtGui
-import sys, subprocess, time, tempfile, urllib, urllib2
+import sys, subprocess, time, tempfile, urllib, urllib2, os
 import icons_rc
 import traceback
 
@@ -23,18 +23,20 @@ class Worker(QtCore.QThread):
     exception = QtCore.pyqtSignal(object)
     success = QtCore.pyqtSignal(object)
     updateEventSlot = QtCore.pyqtSignal(object)
-    
+    retrySlot = QtCore.pyqtSignal(object)
+    killSlot = QtCore.pyqtSignal(object)
     step = 0
     
     def __init__(self, parent = None):
-        QtCore.QThread.__init__(self, parent)
+        self.thread = QtCore.QThread.__init__(self, parent)
         # self.exiting = False # not sure what this line is for
         print "worker thread initializing"
         sys.excepthook = self.excepthook # FIXME
         self.owner = parent
-        
+
     def run(self):
         self.initUi()
+        self.retrySlot.connect(self.retry)
         self.giveIntroToUser(self.run,self.fail)
         print "worker thread running"
         self.dialogWindow = True
@@ -47,10 +49,11 @@ class Worker(QtCore.QThread):
         confirmed = False
         tries = 1
         while not confirmed and tries < 3:
+            print "Confirming: "+str(tries)
             self.connectToFilimin(ssid)
             confirmed = self.readAndWriteToFilimin(credentials, tries)
             tries += 1
-        self.connectBackToWiFi(credentials)
+        self.connectBackToWiFi(credentials, confirmed)
         self.finishUp(confirmed)
         # getattr(self, self.steps[self.step])(self.steps[self.step+1],
         #                                     self.steps[len(self.steps)-1])
@@ -70,18 +73,22 @@ class Worker(QtCore.QThread):
                  """Filimin Autoconfigure has encountered an unexpected error.\n"""\
                  """Please report the below information to support@filimin.com:\n\n"""
         msg = str(notice)+str(excType)+"\n"+str(excValue)+"\n"+str(traceback.format_tb(tracebackobj))
-        self.exception.emit(msg)
+        self.exception.emit(msg) # if uncommented prevents fail signal?
 
     toHex = lambda self,x:"".join([hex(ord(c))[2:].zfill(2) for c in x])
 
     def fail(self, str):
-        # FIXME: actually do something here
-        msg = "Autoconfiguration Failure: "+str+"\n\nThis app will now exit."
+        msg = "Autoconfiguration Error: "+str
         print msg
         self.updateEventSlot.emit({'state':'failure'})
         self.exception.emit(msg)
         while True:
             time.sleep(1)
+
+    def retry(self):
+        subprocess.Popen([os.path.abspath("autoConfig.exe")])
+        self.killSlot.emit({})
+        return
         
     def executeCmd(self, cmd):
         result = subprocess.check_output(cmd, universal_newlines=True, shell=True, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -105,23 +112,23 @@ class Worker(QtCore.QThread):
     def getWiFiProfile(self):
         result = self.executeCmd(["netsh","wlan", "show", "interfaces"])
         if self.findInList('There is 1 interface', result) == -1:
-            self.fail("Found more than one interface")
+            self.fail("This app does not support devices which more than one interface.")
         state = self.findInList('State', result)
         if state == -1:
-            self.fail("Could not find state of interface")
+            self.fail("Could not find state of WiFi interface. Is your WiFi on this device enabled?")
         connected = ("connected" in result[state])
         if connected != True:
-            self.fail("Interface appears to not be connected")
+            self.fail("WiFi Interface appears to not be connected. Connect this device to your WiFi and try again.")
         if self.findInList('SSID                   : Filimin_', result) != -1:
-            self.fail("Connected to a Filimin. Connect to the your router (the Internet) instead")
+            self.fail("This device is connected to a Filimin. Connect to the your router (the Internet) instead and try again.")
         c = self.findInList('Channel', result)
         try:
             channel = result[c][result[c].index(':')+2:] # NEED TRY/CATCH HERE
             channel = int(channel)
         except:
-            self.fail("Your Wi-Fi is not on or is not connected to the Internet.")
+            self.fail("Your Wi-Fi is not on or is not connected to the Internet. Turn on the Wi-Fi and confirm your Internet is working on this device. Then try again.")
         if channel > 14:
-            self.fail("It appears you are connected to a 5Ghz channel. Filimins support only 2.4Ghz channels.\nReconnect your device to a 2.4Ghz channel on your router and try again")
+            self.fail("It appears you are connected to a 5Ghz channel. Filimins support only 2.4Ghz channels.\nIf possible, reconnect your device to a 2.4Ghz channel on your router and try again.")
         r = self.findInList('Authentication', result)
         authType = result[r][result[r].index(':')+2:]
         aTypes = ['WPA2-Personal', 'Open', 'WPA-Personal', 'WEP']
@@ -143,17 +150,22 @@ class Worker(QtCore.QThread):
         if nameLine == -1:
             self.fail("Could not find SSID in profile")
         ssid = result[nameLine][result[nameLine].index('"')+1:-1]
-        pwLine = self.findInList('Key Content', result)
-        if pwLine == -1:
+        keyLine = self.findInList('Security key', result)
+        keyStatus = result[keyLine][result[keyLine].index(':')+2:]
+        if keyStatus == "Absent":
             pw = ''
         else:
-            #self.fail("Could not find password") # FIXME what is there is no pw?
-            pw = result[pwLine][result[pwLine].index(':')+2:]
+            pwLine = self.findInList('Key Content', result)
+            if pwLine == -1:
+                self.fail("Permissions Error: Cannot read Wi-Fi password. Please abort this app and re-run as an Administrator")
+            else:
+                pw = result[pwLine][result[pwLine].index(':')+2:]
         return [ssid, pw]
     
     def getWiFiCredentials(self):
         print "wifi credentials"
         self.updateEventSlot.emit({'step':1, 'state':'spinning'})
+        time.sleep(3) # seems like if we try to see the Filimin too quickly after unplug/replug it's bad?
         profile = self.getWiFiProfile()
         print "Profile: "+profile
         result = self.getSSIDAndPw(profile)
@@ -176,7 +188,7 @@ class Worker(QtCore.QThread):
             time.sleep(1)
         print
         if tries >= secsForFiliminSSID:
-            self.fail("Filimin not found")
+            self.fail("Filimin not found. Is it plugged in? Unplug and replug your Filimin and try again.")
         filiminSSID = result[line][result[line].index("Filimin"):]
         print "Filimin SSID: >>>"+filiminSSID+"<<<"
         return filiminSSID
@@ -210,7 +222,8 @@ class Worker(QtCore.QThread):
 
     def connectToNetwork(self, targetssid, profile, errorMsg):
         tries = 0
-        while tries < secsForFiliminSSID:
+        while tries < 5:
+            tries += 1
             result = self.executeCmd(["netsh","wlan", "connect", "name="+profile])
             t2 = 0
             state = -1
@@ -265,7 +278,7 @@ class Worker(QtCore.QThread):
         confirmed = False
         self.updateEventSlot.emit({'step':5, 'state':'spinning'})
         if currentSSID == name and tries > 1:
-            print "Confirmed after 1st try: "+str(tries)
+            print "Confirmed after try: "+str(tries)
             confirmed = True
         time.sleep(1)
         oldData = data
@@ -289,22 +302,29 @@ class Worker(QtCore.QThread):
             filiminResponse = response.read()
             print "response: "+filiminResponse
             if filiminResponse == '{ "saved" : true }':
-                print "YAY!"
+                print "response confirmed!"
                 return True
+            return False
             return confirmed
         except:
             print "Error"
+            return False
             return confirmed
 
-    def connectBackToWiFi(self, credentials):
-        self.updateEventSlot.emit({'step':6, 'state':'spinning'})
+    def connectBackToWiFi(self, credentials, confirmed):
+        if confirmed:
+            self.updateEventSlot.emit({'step':6, 'state':'spinning'})
         ssid= credentials[0]
         profile = credentials[2]
         self.connectToNetwork(ssid, profile, "Cannot connect back to Wi-Fi")
         
     def finishUp(self, confirmed):
-        self.updateEventSlot.emit({'step':6, 'state':'complete'})
-        self.success.emit('Configuration was successful. Your Filimin will now connect to your Wi-Fi\nAfter you see the celebratory rainbow, touch your Filimin to let somebody know you love them. :-)')
+        if confirmed:
+            self.success.emit('Configuration was successful. Your Filimin will now restart to connect to your Wi-Fi\nAfter it successfully connects, you should see a celebratory rainbow before it goes dark. To confirm you are connected successfully, touch the shade with your entire hand after this. You should see it react to your touch by changing between solid colors.')
+            self.updateEventSlot.emit({'step':6, 'state':'complete'})
+        else:
+            self.step = 5
+            self.fail("Could not confirm settings from your Filimin. It may not have configured correctly. Perhaps try again?")
         print "job done"
         
 #************************************************************************

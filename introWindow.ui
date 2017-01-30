@@ -54,17 +54,7 @@
      <item>
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>This app, designed for Windows 7 and later, is the simplest way to connect your Filimin to your home's Wi-Fi. It is a simpler alternative to manually configuring your Filimin yourself.</string>
-       </property>
-       <property name="wordWrap">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="label_5">
-       <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This app does does not support advanced settings, such as defining colors and time settings for your Filimin. After using the app, visit our &lt;a href=&quot;http://filimin.com/setup&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;setup page&lt;/span&gt;&lt;/a&gt; to change these advanced settings.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>This app, designed for Windows 7 and later, is the simplest way to connect your Filimin to your home's Wi-Fi. It is a simpler alternative to connecting using our web page.</string>
        </property>
        <property name="wordWrap">
         <bool>true</bool>
@@ -82,7 +72,7 @@
         </font>
        </property>
        <property name="text">
-        <string>Unplug and re-plug in your Filimin, then immediately click the OK button below.</string>
+        <string>Unplug and re-plug in your Filimin, then click the OK button below.</string>
        </property>
        <property name="wordWrap">
         <bool>true</bool>
