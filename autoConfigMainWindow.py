@@ -256,7 +256,7 @@ class Ui_MainWindow(object):
         self.step4Text.setText(_translate("MainWindow", "Communicating to Filimin", None))
         self.step5Text.setText(_translate("MainWindow", "Confirming New Settings", None))
         self.step6Text.setText(_translate("MainWindow", "Connecting back to Wi-Fi", None))
-        self.label.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" color:#8c8c8c;\">Version 0.1.2</span></p></body></html>", None))
+        self.label.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" color:#8c8c8c;\">Version 0.1.3</span></p></body></html>", None))
         self.action_Quit.setText(_translate("MainWindow", "&Quit", None))
 
 import icons_rc

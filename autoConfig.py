@@ -1,7 +1,7 @@
 """
 Filimin AutoConfig
 Autoconfigure Filimin for Windows Machines
-v0.1.2
+v0.1.3
 John Harrison
 """
 
@@ -110,9 +110,12 @@ class Worker(QtCore.QThread):
         self.showDialog.emit([success,failure])
         
     def getWiFiProfile(self):
-        result = self.executeCmd(["netsh","wlan", "show", "interfaces"])
+        try:
+            result = self.executeCmd(["netsh","wlan", "show", "interfaces"])
+        except:
+            self.fail("The standard Windows WiFi configuration service is not available. Either you do not have WiFi on this device or your WiFi is maintained by non-standard WiFi software. Please use another device or visit http://filimin.com/setupFilimin on any WiFi-enabled device to configure your Filimin WiFi manually.")
         if self.findInList('There is 1 interface', result) == -1:
-            self.fail("This app does not support devices which more than one interface.")
+            self.fail("Did not find a unique WiFi device. Please use another device or visit http://filimin.com/setupFilimin on a WiFi-enabled device to configure your Filimin WiFi manually.")
         state = self.findInList('State', result)
         if state == -1:
             self.fail("Could not find state of WiFi interface. Is your WiFi on this device enabled?")
