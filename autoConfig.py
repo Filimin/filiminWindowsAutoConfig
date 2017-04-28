@@ -113,9 +113,9 @@ class Worker(QtCore.QThread):
         try:
             result = self.executeCmd(["netsh","wlan", "show", "interfaces"])
         except:
-            self.fail("The standard Windows WiFi configuration service is not available. Either you do not have WiFi on this device or your WiFi is maintained by non-standard WiFi software. Please use another device or visit http://filimin.com/setupFilimin on any WiFi-enabled device to configure your Filimin WiFi manually.")
+            self.fail("The standard Windows Wi-Fi configuration service is not available. Either you do not have Wi-Fi on this device or your Wi-Fi is maintained with non-standard WiFi software. You can either try this autoconfig software on another Wi-Fi enabled Windows device or you can visit http://filimin.com/setupFilimin on any WiFi-enabled laptop, phone or tablet to configure your Filimin's WiFi settings manually.")
         if self.findInList('There is 1 interface', result) == -1:
-            self.fail("Did not find a unique WiFi device. Please use another device or visit http://filimin.com/setupFilimin on a WiFi-enabled device to configure your Filimin WiFi manually.")
+            self.fail("Did not find a unique WiFi device. You can either try this autoconfig software on another Wi-Fi enabled Windows device or you can visit http://filimin.com/setupFilimin on any WiFi-enabled laptop, phone or tablet to configure your Filimin's WiFi settings manually.")
         state = self.findInList('State', result)
         if state == -1:
             self.fail("Could not find state of WiFi interface. Is your WiFi on this device enabled?")
