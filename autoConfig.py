@@ -1,7 +1,7 @@
 """
 Filimin AutoConfig
 Autoconfigure Filimin for Windows Machines
-v0.1.3
+v0.1.4 May 8, 2017
 John Harrison
 """
 
@@ -86,7 +86,7 @@ class Worker(QtCore.QThread):
             time.sleep(1)
 
     def retry(self):
-        subprocess.Popen([os.path.abspath("autoConfig.exe")])
+        subprocess.Popen([os.path.abspath(str(sys.argv[0]))])
         self.killSlot.emit({})
         return
         
