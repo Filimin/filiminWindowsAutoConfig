@@ -26,6 +26,8 @@ class Worker(QtCore.QThread):
     retrySlot = QtCore.pyqtSignal(object)
     killSlot = QtCore.pyqtSignal(object)
     step = 0
+    connectedToHomeWiFi = True
+    credentials = False
     
     def __init__(self, parent = None):
         self.thread = QtCore.QThread.__init__(self, parent)
@@ -35,6 +37,7 @@ class Worker(QtCore.QThread):
         self.owner = parent
 
     def run(self):
+        # self.fail("Test<br /> me<br />this is a <a href='www.google.com'>test</a>")
         self.initUi()
         self.retrySlot.connect(self.retry)
         self.giveIntroToUser(self.run,self.fail)
@@ -43,10 +46,12 @@ class Worker(QtCore.QThread):
         while self.dialogWindow:
             time.sleep(1)
         credentials = self.getWiFiCredentials()
+        self.credentials = credentials # bad hack so we have the info if we call fail
         print "credentials: "+credentials[0]+" "+credentials[1]
         ssid = self.getFiliminSSID()
         profile = self.createAndLoadProfile(ssid)
         confirmed = False
+        self.connectedToHomeWiFi = False
         tries = 1
         while not confirmed and tries < 3:
             print "Confirming: "+str(tries)
@@ -54,6 +59,7 @@ class Worker(QtCore.QThread):
             confirmed = self.readAndWriteToFilimin(credentials, tries)
             tries += 1
         self.connectBackToWiFi(credentials, confirmed)
+        self.connectedToHomeWiFi = True
         self.finishUp(confirmed)
         # getattr(self, self.steps[self.step])(self.steps[self.step+1],
         #                                     self.steps[len(self.steps)-1])
@@ -69,17 +75,19 @@ class Worker(QtCore.QThread):
         @param excValue exception value
         @param tracebackobj traceback object
         """
-        notice = \
-                 """Filimin Autoconfigure has encountered an unexpected error.\n"""\
-                 """Please report the below information to support@filimin.com:\n\n"""
-        msg = str(notice)+str(excType)+"\n"+str(excValue)+"\n"+str(traceback.format_tb(tracebackobj))
+        theError = str(excType)+"\n"+str(excValue)+"\n"+str(traceback.format_tb(tracebackobj))
+        mailBody = urllib.urlencode({'subject':'Oops. The autoconfig just blew up','body':theError})
+        notice = "Filimin Autoconfigure has encountered an unexpected error.<br /><br />Please report the below information to <a href='mailto:support@filimin.com?&"+mailBody+"'>support@filimin.com</a><br /><br />"
+        msg = str(notice)+theError
         self.exception.emit(msg) # if uncommented prevents fail signal?
 
     toHex = lambda self,x:"".join([hex(ord(c))[2:].zfill(2) for c in x])
 
     def fail(self, str):
-        msg = "Autoconfiguration Error: "+str
-        print msg
+        if self.credentials and not self.connectedToHomeWiFi:
+            print "Well that was a bust. Connecting back to home Wi-Fi."
+            self.connectBackToWiFi(self.credentials, False)
+        msg = "<center><h2>Autoconfiguration Error</h2>"+str+"<i><br /><br />You may be able to find more information about this error in our <a href='https://filimin.com/autoConfigurationProblems'>Autoconfiguration Troubleshooting section.</a></i></center>"
         self.updateEventSlot.emit({'state':'failure'})
         self.exception.emit(msg)
         while True:
@@ -131,7 +139,7 @@ class Worker(QtCore.QThread):
         except:
             self.fail("Your Wi-Fi is not on or is not connected to the Internet. Turn on the Wi-Fi and confirm your Internet is working on this device. Then try again.")
         if channel > 14:
-            self.fail("It appears you are connected to a 5Ghz channel. Filimins support only 2.4Ghz channels.\nIf possible, reconnect your device to a 2.4Ghz channel on your router and try again.")
+            self.fail("It appears this Windows device is connected to a 5Ghz channel. Filimins support only 2.4Ghz channels.\nReconnect this device to a 2.4Ghz channel and try again.")
         r = self.findInList('Authentication', result)
         authType = result[r][result[r].index(':')+2:]
         aTypes = ['WPA2-Personal', 'Open', 'WPA-Personal', 'WEP']
@@ -148,7 +156,10 @@ class Worker(QtCore.QThread):
         return profileName
 
     def getSSIDAndPw(self, profile):
-        result = self.executeCmd(["netsh","wlan", "show", "profile", "name="+profile, "key=clear"])
+        try:
+            result = self.executeCmd(["netsh","wlan", "show", "profile", "name="+profile, "key=clear"])
+        except:
+            self.fail("Net shell unable to show profile. This autoconfig will not work on this device.")
         nameLine = self.findInList('SSID name', result)
         if nameLine == -1:
             self.fail("Could not find SSID in profile")
@@ -160,7 +171,7 @@ class Worker(QtCore.QThread):
         else:
             pwLine = self.findInList('Key Content', result)
             if pwLine == -1:
-                self.fail("Permissions Error: Cannot read Wi-Fi password. Please abort this app and re-run as an Administrator")
+                self.fail("Permissions Error: Cannot read Wi-Fi password. Please abort this app and re-run as an Administrator.")
             else:
                 pw = result[pwLine][result[pwLine].index(':')+2:]
         return [ssid, pw]
@@ -180,6 +191,24 @@ class Worker(QtCore.QThread):
         return result
 
     def getFiliminSSID(self):
+        try:
+            WiFiInterface = self.executeCmd(["netsh","wlan", "show", "networks"])[1][17:-1].split(' ')
+        except:
+            self.fail("Network shell call to show networks failed. This autoconfig app is not compatible with this device.")
+        sys.stdout.write('"Wi-Fi Interface name: "')
+        print WiFiInterface
+        WiFiInterface[0] = 'name="'+WiFiInterface[0]
+        WiFiInterface[-1] = WiFiInterface[-1]+'"'
+        print "turning off network to delete cache"
+        try:
+            self.executeCmd(["netsh","interface", "set", "interface"]+WiFiInterface+["admin=disabled"])
+        except:
+            self.fail("Network shell call to temporarily disable interface failed. This autoconfig app is not compatible with this device.")
+        print "turning on network"
+        try:
+            self.executeCmd(["netsh","interface", "set", "interface"]+WiFiInterface+["admin=enabled"])
+        except:
+            self.fail("Network shell call to re-enable (reset) interface failed. This autoconfig app is not compatible with this device.")
         tries = 0
         while tries < secsForFiliminSSID:
             print ".",
@@ -221,13 +250,19 @@ class Worker(QtCore.QThread):
                     fOut.write(line)
         fOut.close()
         fTemplate.close()
-        self.executeCmd(["netsh","wlan", "add", "profile", "filename="+fOut.name])
-
+        try:
+            self.executeCmd(["netsh","wlan", "add", "profile", "filename="+fOut.name])
+        except:
+            self.fail("Net shell failed to add profile. This autoconfiguration app is not compatible with this device. Please use another device or use the Filimin online setup.")
+            
     def connectToNetwork(self, targetssid, profile, errorMsg):
         tries = 0
         while tries < 5:
             tries += 1
-            result = self.executeCmd(["netsh","wlan", "connect", "name="+profile])
+            try:
+                result = self.executeCmd(["netsh","wlan", "connect", "name="+profile])
+            except:
+                self.fail("Failed to connect to profile. This autoconfiguration app is probably incompatible with this device. Please use another device or use the Filimin online setup.")
             t2 = 0
             state = -1
             while t2 < secsForFiliminSSID:
@@ -238,7 +273,7 @@ class Worker(QtCore.QThread):
                     break;
                 t2 += 1
             if state == -1:
-                self.fail("Wi-Fi interface never connected")
+                self.fail("Wi-Fi interface never connected.\n\nThis error is typically resolved on a second try.")
             ssidLine = self.findInList("SSID", result)
             ssid = result[ssidLine][result[ssidLine].index(':')+2:]
             print "connected to SSID >>>"+ssid+"<<<"
@@ -323,7 +358,7 @@ class Worker(QtCore.QThread):
         
     def finishUp(self, confirmed):
         if confirmed:
-            self.success.emit('Configuration was successful. Your Filimin will now restart to connect to your Wi-Fi\nAfter it successfully connects, you should see a celebratory rainbow before it goes dark. To confirm you are connected successfully, touch the shade with your entire hand after this. You should see it react to your touch by changing between solid colors.')
+            self.success.emit("<h2><center><b>Configuration succeeded!</b></center></h2><br /><br />Your Filimin will now restart to connect to your Wi-Fi.<br /><br />After it successfully connects, you should see a <i>celebratory rainbow</i> before it goes dark or shows a solid color.<br /><br />When the bootup completes, confirm you are connected by touching the shade with your entire hand. You should see it react to your touch by changing between solid colors.<br /><br />Problems? We're <a href='https://filimin.com/autoConfigurationProblems'>glad to help.</a>")
             self.updateEventSlot.emit({'step':6, 'state':'complete'})
         else:
             self.step = 5

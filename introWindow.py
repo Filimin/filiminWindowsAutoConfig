@@ -76,5 +76,5 @@ class Ui_Dialog(object):
         Dialog.setWindowTitle(_translate("Dialog", "Dialog", None))
         self.label.setText(_translate("Dialog", "Filimin Auto Configuration", None))
         self.label_2.setText(_translate("Dialog", "This app, designed for Windows 7 and later, is the simplest way to connect your Filimin to your home\'s Wi-Fi. It is a simpler alternative to connecting using our web page.", None))
-        self.label_6.setText(_translate("Dialog", "Unplug and re-plug in your Filimin, then click the OK button below.", None))
+        self.label_6.setText(_translate("Dialog", "Plug your Filimin in, if you haven\'t already. Confirm that it is pulsing green or pulsing orange, then click <OK>.", None))
 

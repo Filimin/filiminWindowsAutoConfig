@@ -21,8 +21,7 @@ a = Analysis(['autoconfig.py'],
              cipher=block_cipher)
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
-exe = EXE(pyz,
-          
+exe = EXE(pyz,          
           a.scripts,
           a.binaries,
           a.zipfiles,
@@ -31,7 +30,17 @@ exe = EXE(pyz,
           debug=False,
           strip=False,
           upx=True,
-          console=False )
+          manifest_override="autoConfig.exe.manifest",
+          uac_admin=True, # get elevated privs
+          console=False) # , manifest='autoConfig.exe.manifest')
+
+# the below seems to solve an apparent bug where the manifest file is not created
+# the manifest file seems necessary only when uac_admin=True (above)
+coll = COLLECT(exe,
+               strip=False,
+               upx=True,
+               name='autoConfig'
+)
 '''
 exe = EXE(pyz,
           a.scripts,

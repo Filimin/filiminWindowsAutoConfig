@@ -5,8 +5,8 @@ block_cipher = None
 
 a = Analysis(['autoConfig.py'],
              pathex=['C:\\Users\\user\\dev\\autoConfig'],
-             binaries=None,
-             datas=None,
+             binaries=[],
+             datas=[],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
@@ -23,7 +23,7 @@ exe = EXE(pyz,
           debug=False,
           strip=False,
           upx=True,
-          console=True )
+          console=True , manifest='autoConfig.exe.manifest')
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
