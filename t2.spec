@@ -41,21 +41,3 @@ coll = COLLECT(exe,
                upx=True,
                name='autoConfig'
 )
-'''
-exe = EXE(pyz,
-          a.scripts,
-          exclude_binaries=True,
-          name='autoconfig',
-          debug=False,
-          strip=False,
-          upx=True,
-          console=True )
-
-coll = COLLECT(exe,
-               a.binaries,
-               a.zipfiles,
-               a.datas,
-               strip=False,
-               upx=True,
-               name='autoconfig')
-'''

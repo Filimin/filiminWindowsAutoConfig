@@ -230,7 +230,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_7.addLayout(self.verticalLayout_2)
         self.verticalLayout_3.addLayout(self.horizontalLayout_7)
         self.label = QtGui.QLabel(self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(600, 260, 71, 16))
+        self.label.setGeometry(QtCore.QRect(600, 260, 91, 16))
         font = QtGui.QFont()
         font.setItalic(True)
         self.label.setFont(font)
