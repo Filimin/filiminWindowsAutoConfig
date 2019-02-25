@@ -149,7 +149,7 @@ class Worker(QtCore.QThread):
         except:
             self.fail("Turn on the Wi-Fi for your laptop and make sure it is connected to your Wi-Fi network.<br />Then try running the automatic setup app again. (Error Code 14)")
         if channel > 14:
-            self.fail("It looks like you are trying to connect to a 5Ghz network. Friendships Lamp can only connect to 2.4Ghz networks.<br />Please connect this setup device to a 2.4Ghz network and try running the automatic setup app again.<br />If you aren't sure how to access your 2.4Ghz network, contact your internet provider for help. (Error Code 19)")
+            self.fail("It looks like you are trying to connect to a 5Ghz network. Friendship Lamps can only connect to 2.4Ghz networks.<br />Please connect this setup device to a 2.4Ghz network and try running the automatic setup app again.<br />If you aren't sure how to access your 2.4Ghz network, contact your internet provider for help. (Error Code 19)")
         r = self.findInList('Authentication', result)
         authType = result[r][result[r].index(':')+2:]
         aTypes = ['WPA2-Personal', 'Open', 'WPA-Personal', 'WEP']
@@ -296,7 +296,7 @@ class Worker(QtCore.QThread):
                     break;
                 t2 += 1
             if state == -1:
-                self.fail("The automatic setup app wasn't able to connect your Friendship Lamp.<br />Please try moving your laptop closer to the lamp and running the auto-configuration program again. If the problem persists, please contact us for help. (Error Code 17)")
+                self.fail("The automatic setup app wasn't able to connect your Friendship Lamp.<br />Please try moving your laptop closer to the lamp and running the app again. If the problem persists, please contact us for help. (Error Code 17)")
             ssidLine = self.findInList("SSID", result)
             ssid = result[ssidLine][result[ssidLine].index(':')+2:]
             print "connected to SSID >>>"+ssid+"<<<"
