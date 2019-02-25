@@ -25,14 +25,15 @@ except AttributeError:
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName(_fromUtf8("Dialog"))
-        Dialog.resize(400, 303)
+        Dialog.setEnabled(True)
+        Dialog.resize(600, 303)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(Dialog.sizePolicy().hasHeightForWidth())
         Dialog.setSizePolicy(sizePolicy)
-        Dialog.setMinimumSize(QtCore.QSize(400, 303))
-        Dialog.setMaximumSize(QtCore.QSize(400, 303))
+        Dialog.setMinimumSize(QtCore.QSize(600, 303))
+        Dialog.setMaximumSize(QtCore.QSize(600, 303))
         self.gridLayout = QtGui.QGridLayout(Dialog)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.verticalLayout_2 = QtGui.QVBoxLayout()
@@ -74,7 +75,7 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         Dialog.setWindowTitle(_translate("Dialog", "Dialog", None))
-        self.label.setText(_translate("Dialog", "Filimin Auto Configuration", None))
-        self.label_2.setText(_translate("Dialog", "This app, designed for Windows 7 and later, is the simplest way to connect your Filimin to your home\'s Wi-Fi. It is simpler to use than our online setup and employs a more aggressive technique to search for your Filimin.<br /><br />The app will fail in some circumstances when run on a device where 3rd party Wi-Fi managers are used instead of the standard Microsoft Wi-Fi managers. In those cases, please try the online setup.", None))
-        self.label_6.setText(_translate("Dialog", "Plug your Filimin in if you haven\'t already. Confirm that it is pulsing green or pulsing yellow/orange, then click <OK>.", None))
+        self.label.setText(_translate("Dialog", "Friendship Lamp Automatic Setup", None))
+        self.label_2.setText(_translate("Dialog", "<html><head/><body><p align=\"center\">This app, designed for Windows 7 and later, is the simplest way to connect your Friendship Lamp to your home\'s Wi-Fi.</p><p align=\"center\">It is simpler to use than our online setup and employs a more aggressive technique to search for your lamp.</p></body></html>", None))
+        self.label_6.setText(_translate("Dialog", "<html><head/><body><p align=\"center\">Unplug and replug your Filimin in.<br/>Confirm that it is pulsing green or pulsing yellow/orange, then click [OK].</p></body></html>", None))
 

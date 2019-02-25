@@ -1,7 +1,6 @@
 """
-Filimin AutoConfig
-Autoconfigure Filimin for Windows Machines
-v0.1.4 May 8, 2017
+Filimin Automatic Setup
+Automatic Setup of Friendship Lamp for Windows Machines
 John Harrison
 """
 
@@ -29,6 +28,7 @@ class Worker(QtCore.QThread):
     connectedToHomeWiFi = True
     credentials = False
     alreadyFailed = False
+    filiminID = "unknown"
     
     def __init__(self, parent = None):
         self.thread = QtCore.QThread.__init__(self, parent)
@@ -76,8 +76,12 @@ class Worker(QtCore.QThread):
         @param tracebackobj traceback object
         """
         theError = str(excType)+"\n"+str(excValue)+"\n"+str(traceback.format_tb(tracebackobj))
-        mailBody = urllib.urlencode({'subject':'Oops. The autoconfig just blew up','body':'The Filimin Autoconfiguration app just conked out and said this:\n\n'+theError})
-        notice = "<center><h2>Unexpected Error</h2><br /><br />Filimin Autoconfigure has encountered an unexpected error. Please <a href='mailto:errorReports@filimin.com?&"+mailBody+"'>report the information below</a> so we may refer to it if you wish to <a href='https://filimin.com/contact'>followup with us.</a></center><br /<br />"
+        #theError = theError.replace("'", "")
+        #theError = theError.replace('"', '')
+        body = urllib.urlencode({"body":"I just received the following unexpected error from your Automatic Setup app:<br /><br />"+theError});
+        print body
+        # body = "body=I just received the following unexpected error from your Automatic Setup app:<br /><br />\""+theError+"\""
+        notice = "<center><h2>Unexpected Error</h2><br /><br />This Automatic Setup app has encountered an unexpected error.<br />Please <a href='https://friendshiplamps.com/pages/contact-us?"+body+"'>report this error</a> so we may diagnose it and followup with you</center><br /<br />"
         msg = str(notice)+"<i>"+theError+"</i>"
         self.exception.emit(msg) # if uncommented prevents fail signal?
 
@@ -88,8 +92,12 @@ class Worker(QtCore.QThread):
             self.alreadyFailed = True
             print "Well that was a bust. Connecting back to home Wi-Fi."
             self.connectBackToWiFi(self.credentials, False)
-        mailBody = urllib.urlencode({'subject':'AutoConfig Error: '+str,'body':'Autoconfig has encountered the following error:\n\n'+str})
-        msg = "<center><h2>Autoconfiguration Error</h2>"+str+"<i><br /><br />You may be able to find more information about this error in our <a href='https://filimin.com/autoConfigurationProblems'>Autoconfiguration Troubleshooting section.</a><br /><br />You can also <a href='mailto:errorReports@filimin.com?&"+mailBody+"'>report this error</a> so we may refer to it if you wish to <a href='https://filimin.com/contact'>followup with us.</a></i></center>"
+
+        body = "Please followup with me about the following error I got from your Automatic Setup app:<br /><br />"+str
+        body = urllib.urlencode({"body":body})
+        if self.filiminID != "unknown":
+            body += "&device_code="+self.filiminID
+        msg = "<center><h2>Autoconfiguration Error</h2>"+str+"<br /><br />Please <a href='https://friendshiplamps.com/pages/contact-us?"+body+"'>report this error</a> if you would like us to followup with you.</i></center>"
         self.updateEventSlot.emit({'state':'failure'})
         self.exception.emit(msg)
         while True:
@@ -123,25 +131,25 @@ class Worker(QtCore.QThread):
         try:
             result = self.executeCmd(["netsh","wlan", "show", "interfaces"])
         except:
-            self.fail("The standard Windows Wi-Fi configuration service is not available. Either you do not have Wi-Fi on this device or your Wi-Fi is maintained with non-standard WiFi software. You can either try this autoconfig software on another Wi-Fi enabled Windows device or you can visit http://filimin.com/setupFilimin on any WiFi-enabled laptop, phone or tablet to configure your Filimin's WiFi settings manually.")
+            self.fail("It looks like this device doesn't have Wi-Fi, or is missing the correct Wi-Fi software.<br />Please try using the automatic setup app on a different Wi-Fi enabled Windows device. (Error Code 1)")
         if self.findInList('There is 1 interface', result) == -1:
-            self.fail("Did not find a unique WiFi device. You can either try this autoconfig software on another Wi-Fi enabled Windows device or you can visit http://filimin.com/setupFilimin on any WiFi-enabled laptop, phone or tablet to configure your Filimin's WiFi settings manually.")
+            self.fail("It looks like this device may have more than one Wi-Fi card.<br />Please try using the automatic setup app on a different Wi-Fi enabled Windows device. (Error Code 2)")
         state = self.findInList('State', result)
         if state == -1:
-            self.fail("Could not find state of WiFi interface. Is your WiFi on this device enabled?")
+            self.fail("Please make sure that Wi-Fi is enabled on your laptop and try again.<br />If the problem persists try using the automatic setup app on a different Wi-Fi enabled Windows device. (Error Code 11)")
         connected = ("connected" in result[state])
         if connected != True:
-            self.fail("WiFi Interface appears to not be connected. Connect this device to your WiFi and try again.")
-        if self.findInList('SSID                   : Filimin_', result) != -1:
-            self.fail("This device is connected to a Filimin. Connect to the your router (the Internet) instead and try again.")
+            self.fail("Please make sure that Wi-Fi is enabled on your laptop and try again.<br />If the problem persists try using the automatic setup app on a different Wi-Fi enabled Windows device. (Error Code 12)")
+        if self.findInList('SSID                   : Friendship Lamp_', result) != -1:
+            self.fail("Please make sure your laptop is connected to your home Wi-Fi network, and not the Filimin_############ Wi-Fi signal.<br />Then try running the automatic setup app again. (Error Code 13)")
         c = self.findInList('Channel', result)
         try:
             channel = result[c][result[c].index(':')+2:] # NEED TRY/CATCH HERE
             channel = int(channel)
         except:
-            self.fail("Your Wi-Fi is not on or is not connected to the Internet. Turn on the Wi-Fi and confirm your Internet is working on this device. Then try again.")
+            self.fail("Turn on the Wi-Fi for your laptop and make sure it is connected to your Wi-Fi network.<br />Then try running the automatic setup app again. (Error Code 14)")
         if channel > 14:
-            self.fail("It appears this Windows device is connected to a 5Ghz channel. Filimins support only 2.4Ghz channels.\nReconnect this device to a 2.4Ghz channel and try again.")
+            self.fail("It looks like you are trying to connect to a 5Ghz network. Friendships Lamp can only connect to 2.4Ghz networks.<br />Please connect this setup device to a 2.4Ghz network and try running the automatic setup app again.<br />If you aren't sure how to access your 2.4Ghz network, contact your internet provider for help. (Error Code 19)")
         r = self.findInList('Authentication', result)
         authType = result[r][result[r].index(':')+2:]
         aTypes = ['WPA2-Personal', 'Open', 'WPA-Personal', 'WEP']
@@ -150,10 +158,10 @@ class Worker(QtCore.QThread):
             if authType == aType:
                 match = True
         if not match:
-            self.fail("Authentication "+authType+" not supported by Filimin. Supported types: WPA2-Personal, Open, WPA-Personal, WEP")
+            self.fail("It looks like your network authentication type "+authType+" isn't compatible with your Friendship Lamp.<br />Supported types: WPA2-Personal, Open, WPA-Personal, WEP. Please try connecting to a different network. (Error Code 15)")
         profile = self.findInList('Profile                :', result)
         if profile == -1:
-            self.fail("Could not find profile")
+            self.fail("It looks like this automatic setup app can't find any Wi-Fi settings on your laptop.<br />Please try using this app on a different Wi-Fi enabled Windows device. (Error Code 3)")
         profileName = result[profile][result[profile].index(':')+2:-1]
         return profileName
 
@@ -161,10 +169,10 @@ class Worker(QtCore.QThread):
         try:
             result = self.executeCmd(["netsh","wlan", "show", "profile", "name="+profile, "key=clear"])
         except:
-            self.fail("Net shell unable to show profile.<br />This autoconfig will not work on this device.")
+            self.fail("This automatic setup app is not compatible with this device.<br />Please try using the automatic setup app on a different Wi-Fi enabled Windows device, or try using the online set up. (Error Code 5)")
         nameLine = self.findInList('SSID name', result)
         if nameLine == -1:
-            self.fail("Could not find SSID in profile")
+            self.fail("This automatic setup app is not compatible with this device.<br />Please try using the automatic setup app on a different Wi-Fi enabled Windows device, or try using the online set up. (Error Code 4)")
         ssid = result[nameLine][result[nameLine].index('"')+1:-1]
         keyLine = self.findInList('Security key', result)
         keyStatus = result[keyLine][result[keyLine].index(':')+2:]
@@ -196,7 +204,7 @@ class Worker(QtCore.QThread):
         try:
             WiFiInterface = self.executeCmd(["netsh","wlan", "show", "networks"])[1][17:-1].split(' ')
         except:
-            self.fail("Network shell call to show networks failed.<br />This autoconfig app is not compatible with this device.")
+            self.fail("This automatic setup app is not compatible with this device.<br />Please try using the automatic setup app on a different Wi-Fi enabled Windows device, or try using the online set up. (Error Code 6)")
         sys.stdout.write('"Wi-Fi Interface name: "')
         print WiFiInterface
         WiFiInterface[0] = 'name="'+WiFiInterface[0]
@@ -205,12 +213,12 @@ class Worker(QtCore.QThread):
         try:
             self.executeCmd(["netsh","interface", "set", "interface"]+WiFiInterface+["admin=disabled"])
         except:
-            self.fail("Network shell call to temporarily disable interface failed.<br />This autoconfig app is not compatible with this device.")
+            self.fail("This automatic setup app is not compatible with this device.<br />Please try using the automatic setup app on a different Wi-Fi enabled Windows device, or try using the online set up. (Error Code 7)")
         print "turning on network"
         try:
             self.executeCmd(["netsh","interface", "set", "interface"]+WiFiInterface+["admin=enabled"])
         except:
-            self.fail("Network shell call to re-enable (reset) interface failed.<br />This autoconfig app is not compatible with this device.")
+            self.fail("This automatic setup app is not compatible with this device.<br />Please try using the automatic setup app on a different Wi-Fi enabled Windows device, or try using the online set up. (Error Code 8)")
         tries = 0
         while tries < secsForFiliminSSID:
             print ".",
@@ -218,7 +226,7 @@ class Worker(QtCore.QThread):
             succeeded = False
             while not succeeded:
                 if fails > 10:
-                    self.fail("Network shell call to show the networks failed.<br />This autoconfig app is not compatible with this device.")
+                    self.fail("This automatic setup app is not compatible with this device.<br />Please try using the automatic setup app on a different Wi-Fi enabled Windows device, or try using the online set up. (Error Code 6)")
                 try:
                     result = self.executeCmd(["netsh","wlan", "show", "networks"])
                     succeeded = True
@@ -234,8 +242,9 @@ class Worker(QtCore.QThread):
             time.sleep(1)
         print
         if tries >= secsForFiliminSSID:
-            self.fail("Filimin not found. Is it plugged in? Unplug and replug your Filimin and try again.")
+            self.fail("It looks like your Friendship Lamp may not be plugged in.<br />Please plug in your Friendship Lamp and try again.<br />If the problem persists, please contact us for help. (Error Code 16)")
         filiminSSID = result[line][result[line].index("Filimin"):]
+        self.filiminID = filiminSSID.split("_")[1]
         print "Filimin SSID: >>>"+filiminSSID+"<<<"
         return filiminSSID
     
@@ -267,7 +276,7 @@ class Worker(QtCore.QThread):
         try:
             self.executeCmd(["netsh","wlan", "add", "profile", "filename="+fOut.name])
         except:
-            self.fail("Net shell failed to add profile.<br />This autoconfiguration app is not compatible with this device. Please use another device or use the Filimin online setup.")
+            self.fail("This automatic setup app is not compatible with this device.<br />Please try using the automatic setup app on a different Wi-Fi enabled Windows device, or try using the online set up. (Error Code 9)")
             
     def connectToNetwork(self, targetssid, profile, errorMsg):
         tries = 0
@@ -276,7 +285,7 @@ class Worker(QtCore.QThread):
             try:
                 result = self.executeCmd(["netsh","wlan", "connect", "name="+profile])
             except:
-                self.fail("Failed to connect to profile.<br />This autoconfiguration app is probably incompatible with this device. Please use another device or use the Filimin online setup.")
+                self.fail("This automatic setup app is not compatible with this device.<br />Please try using the automatic setup app on a different Wi-Fi enabled Windows device, or try using the online set up. (Error Code 10)")
             t2 = 0
             state = -1
             while t2 < secsForFiliminSSID:
@@ -287,7 +296,7 @@ class Worker(QtCore.QThread):
                     break;
                 t2 += 1
             if state == -1:
-                self.fail("Wi-Fi interface never connected.\n\nThis error is typically resolved on a second try.")
+                self.fail("The automatic setup app wasn't able to connect your Friendship Lamp.<br />Please try moving your laptop closer to the lamp and running the auto-configuration program again. If the problem persists, please contact us for help. (Error Code 17)")
             ssidLine = self.findInList("SSID", result)
             ssid = result[ssidLine][result[ssidLine].index(':')+2:]
             print "connected to SSID >>>"+ssid+"<<<"
@@ -372,11 +381,11 @@ class Worker(QtCore.QThread):
         
     def finishUp(self, confirmed):
         if confirmed:
-            self.success.emit("<h2><center><b>Configuration succeeded!</b></center></h2><br /><br />Your Filimin will now restart to connect to your Wi-Fi.<br /><br />After it successfully connects, you should see a <i>celebratory rainbow</i> before it goes dark or shows a solid color.<br /><br />When the bootup completes, confirm you are connected by touching the shade with your entire hand. You should see it react to your touch by changing between solid colors.<br /><br />Problems? Refer to our <a href='https://filimin.com/autoConfigurationProblems'>Autoconfiguration Troubleshooting section.</a><br />Or if you prefer a human we're always <a href='https://filimin.com/contact'>glad to help.</a>")
+            self.success.emit("<h2><center><b>Configuration succeeded!</b></center></h2><br /><br />Your Friendship Lamp will now restart to connect to your Wi-Fi.<br /><br />After it successfully connects, you should see a <i>celebratory rainbow</i> before it goes dark or shows a solid color.<br /><br />When the bootup completes, confirm you are connected by touching the shade with your entire hand. You should see it react to your touch by changing between solid colors.<br /><br />Problems? We're always <a href='https://filimin.com/contact'>glad to help.</a>")
             self.updateEventSlot.emit({'step':6, 'state':'complete'})
         else:
             self.step = 5
-            self.fail("Could not confirm settings from your Filimin. It may not have configured correctly. Perhaps try again?")
+            self.fail("The automatic setup app didn't get confirmation from your Friendship Lamp after saving settings.<br />Please try running through the setup again. If you continue to get this error, contact us for help. (Error Code 18)")
         print "job done"
         
 #************************************************************************

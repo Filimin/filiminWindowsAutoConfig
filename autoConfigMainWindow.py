@@ -37,7 +37,7 @@ class Ui_MainWindow(object):
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.layoutWidget = QtGui.QWidget(self.centralwidget)
-        self.layoutWidget.setGeometry(QtCore.QRect(40, 10, 626, 211))
+        self.layoutWidget.setGeometry(QtCore.QRect(40, 10, 693, 211))
         self.layoutWidget.setObjectName(_fromUtf8("layoutWidget"))
         self.verticalLayout_3 = QtGui.QVBoxLayout(self.layoutWidget)
         self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
@@ -249,14 +249,14 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(_translate("MainWindow", "Filimin Auto Configuration", None))
-        self.label_6.setText(_translate("MainWindow", "Filimin Auto Configuration", None))
+        self.label_6.setText(_translate("MainWindow", "Friendship Lamp Automatic Setup", None))
         self.step1Text.setText(_translate("MainWindow", "Retrieving Wi-Fi Credentials", None))
         self.step2Text.setText(_translate("MainWindow", "Creating Profile", None))
-        self.step3Text.setText(_translate("MainWindow", "Connecting to Filimin", None))
-        self.step4Text.setText(_translate("MainWindow", "Communicating to Filimin", None))
+        self.step3Text.setText(_translate("MainWindow", "Connecting to Lamp", None))
+        self.step4Text.setText(_translate("MainWindow", "Communicating to Lamp", None))
         self.step5Text.setText(_translate("MainWindow", "Confirming New Settings", None))
         self.step6Text.setText(_translate("MainWindow", "Connecting back to Wi-Fi", None))
-        self.label.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" color:#8c8c8c;\">Version 0.2.0</span></p></body></html>", None))
+        self.label.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" color:#8c8c8c;\">Version 0.3.0</span></p></body></html>", None))
         self.action_Quit.setText(_translate("MainWindow", "&Quit", None))
 
 import icons_rc

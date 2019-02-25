@@ -2,11 +2,14 @@
 <ui version="4.0">
  <class>Dialog</class>
  <widget class="QDialog" name="Dialog">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>600</width>
     <height>303</height>
    </rect>
   </property>
@@ -18,13 +21,13 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>400</width>
+    <width>600</width>
     <height>303</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>400</width>
+    <width>600</width>
     <height>303</height>
    </size>
   </property>
@@ -44,7 +47,7 @@
         </font>
        </property>
        <property name="text">
-        <string>Filimin Auto Configuration</string>
+        <string>Friendship Lamp Automatic Setup</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -54,7 +57,7 @@
      <item>
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>This app, designed for Windows 7 and later, is the simplest way to connect your Filimin to your home's Wi-Fi. It is simpler to use than our online setup and employs a more aggressive technique to search for your Filimin.&lt;br /&gt;&lt;br /&gt;The app will fail in some circumstances when run on a device where 3rd party Wi-Fi managers are used instead of the standard Microsoft Wi-Fi managers. In those cases, please try the online setup.</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;This app, designed for Windows 7 and later, is the simplest way to connect your Friendship Lamp to your home's Wi-Fi.&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;It is simpler to use than our online setup and employs a more aggressive technique to search for your lamp.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="wordWrap">
         <bool>true</bool>
@@ -72,7 +75,7 @@
         </font>
        </property>
        <property name="text">
-        <string>Plug your Filimin in if you haven't already. Confirm that it is pulsing green or pulsing yellow/orange, then click &lt;OK&gt;.</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Unplug and replug your Filimin in.&lt;br/&gt;Confirm that it is pulsing green or pulsing yellow/orange, then click [OK].&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="wordWrap">
         <bool>true</bool>
