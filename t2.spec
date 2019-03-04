@@ -32,6 +32,7 @@ exe = EXE(pyz,
           upx=True,
           manifest_override="autoConfig.exe.manifest",
           uac_admin=True, # get elevated privs
+          icon='filiminSetupIcon.ico',
           console=False) # , manifest='autoConfig.exe.manifest')
 
 # the below seems to solve an apparent bug where the manifest file is not created
